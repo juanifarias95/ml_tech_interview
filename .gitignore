@@ -1,0 +1,4 @@
+__pycache__/
+# Jupyter NB Checkpoints
+.ipynb_checkpoints/
+/data/*.csv
