@@ -23,7 +23,7 @@ Predict if an item is used or new
 
 A folder will be create automatically on `detect_item_new_or_used/reports/train/Ymd_HMS` and model and results.log will be stored there
 
-* To test Model run --> `python experiment.py --test --test_models Ymd_HMS` where the `Ymd_HMS` is the folder  created when training.
+* To test Model run --> `python experiment.py --test --test-models Ymd_HMS` where the `Ymd_HMS` is the folder  created when training.
 Again, a folder will be created automatically on `detect_item_new_or_used/reports/train/Ymd_HMS`
 
 ### Repository owner ###

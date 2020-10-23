@@ -95,10 +95,13 @@ class NewUsedItemExperiment(object):
         """
         self.parse_arguments()
         self.prepare_environment()
+        print("\nStarting experiment\n")
         self.logger.info("\nStarting experiment\n")
         self.logger.info("\nSaving results to {}".format(self.out_dir))
         self.run()
         self.logger.info("\nExperiment finished!")
+        print("\nExperiment finished!")
+        print(f"Results on {self.out_dir}")
 
     def prepare_data_for_experiment(self):
         data_preprocessing_obj = DataPreprocessing(DataPreprocessingParams)
@@ -143,7 +146,7 @@ class NewUsedItemExperiment(object):
         self.logger.info("\nTRAIN RESULTS\n")
         self.logger.info("=============\n")
 
-        report, tn, fp, fn, tp = ml_model_obj.test_model(xgb_model, X_train, y_train)
+        report, tn, fp, fn, tp, auc = ml_model_obj.test_model(xgb_model, X_train, y_train)
         self.logger.info(f"Classification report: \n{report}\n")
         self.logger.info(f"True Negatives = {tn}\n")
         self.logger.info(f"False Positives = {fp}\n")
@@ -151,7 +154,6 @@ class NewUsedItemExperiment(object):
         self.logger.info(f"True Positives = {tp}\n")
         self.logger.info(f"AUC = {auc}")
         
-
     def test_experiment(self, df_test):
         ml_model_obj = MLModel(MLParams)
         path = os.getcwd()
