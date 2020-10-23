@@ -10,7 +10,7 @@ Predict if an item is used or new
 
 ### How to Setup environment? ###
 
-* Run `conda env create -f environment.yml`
+* Run `bash setup.sh`
 
 ### Insights ###
 
