@@ -1,0 +1,58 @@
+1. A baseline model was built achieving the next metrics:
+
+TRAIN
+=====
+              precision    recall  f1-score   support
+
+           0       0.77      0.59      0.67     10069
+           1       0.89      0.95      0.92     34450
+
+    accuracy                           0.87     44519
+   macro avg       0.83      0.77      0.79     44519
+weighted avg       0.86      0.87      0.86     44519
+
+True Negative = 5950
+False Negative = 1744
+False Positive = 4119
+True Positive = 32706
+
+==========
+AUC = 0.77
+==========
+
+TEST
+====
+              precision    recall  f1-score   support
+
+           0       0.84      0.42      0.56      1781
+           1       0.81      0.97      0.88      4510
+
+    accuracy                           0.81      6291
+
+True Negative = 748
+False Negative = 138
+False Positive = 1033
+True Positive = 4372
+
+==========
+AUC = 0.69
+==========
+
+2. The choosen metric was AUC.
+   I consider both classes detection are equally important for this problem.
+   Even knowing that AUC is the choosen metric, i decided to put as results the accuracy, precision and recall, but only
+   with the aim to show that they don't clearly show the performance of the model. We can see the difference
+   on metrics mentioned before between negative and positve class
+3. First of all, ACCURACY was not choosen, not because it is not a good metric but it is not a good
+   metric to deal with imbalanced classes. Also neither PRECISION nor RECALL, because in addition to being
+   imbalanced the dataset, the positive class is larger so we should probably use the ROC metrics because 
+   the precision and recall would reflect mostly the ability of prediction of the positive class and not the 
+   negative class which will naturally be harder to detect due to the smaller number of samples.
+4. Now talking about AUC results, we can conclude for this first part (baseline) that model has a regular behaviour. What i mean
+   with this is that i'm far to achieve a best model yet, but this is a good first approach.
+   Something remarkable is that TEST AUC is 0.08 less than TRAIN AUC, so i can think i'm maybe making incorrect assumptions about some features.
+5. Posible improvements:
+    - I can think to try to balance the classes, either with downsampling or upsampling.
+    - Make a grid search over model params.
+    - More Feature engineer.
+    - More Data exploration to see relationship between features and understand in a better way the dataset.

@@ -1,0 +1,33 @@
+TRAIN RESULTS
+=============
+
+              precision    recall  f1-score   support
+
+           0       0.77      0.59      0.67     10069
+           1       0.89      0.95      0.92     34450
+
+    accuracy                           0.87     44519
+   macro avg       0.83      0.77      0.79     44519
+weighted avg       0.86      0.87      0.86     44519
+
+True Negative = 5950
+False Negative = 1744
+False Positive = 4119
+True Positive = 32706
+
+
+TEST RESULTS
+============
+              precision    recall  f1-score   support
+
+           0       0.84      0.42      0.56      1781
+           1       0.81      0.97      0.88      4510
+
+    accuracy                           0.81      6291
+   macro avg       0.83      0.69      0.72      6291
+weighted avg       0.82      0.81      0.79      6291
+
+True Negative = 748
+False Negative = 138
+False Positive = 1033
+True Positive = 4372
