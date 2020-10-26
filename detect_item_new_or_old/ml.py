@@ -37,7 +37,8 @@ class MLModel(object):
 
         xgb_param = xgb_model.get_xgb_params()
         xgb_train = xgb.DMatrix(X.values, label=y.values)
-        cv_result = xgb.cv(xgb_param, xgb_train, num_boost_round=xgb_model.get_params()['n_estimators'], nfold=self.params.cv_folds, early_stopping_rounds=self.params.early_stopping)
+        cv_result = xgb.cv(xgb_param, xgb_train, stratified=True, num_boost_round=xgb_model.get_params()['n_estimators'],
+                           nfold=self.params.cv_folds, early_stopping_rounds=self.params.early_stopping, verbose_eval=True)
         xgb_model.set_params(n_estimators=cv_result.shape[0])
         
         # fit model
@@ -61,6 +62,6 @@ class MLModel(object):
         tn, fp, fn, tp = cm.ravel()
         fpr, tpr, thresholds = metrics.roc_curve(y, preds)
         auc = metrics.auc(fpr, tpr)
-        
+
         return report, tn, fp, fn, tp, auc
-    
+

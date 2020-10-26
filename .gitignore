@@ -3,3 +3,4 @@ __pycache__/
 .ipynb_checkpoints/
 /data/*.csv
 /detect_item_new_or_used/reports
+*.pyc
