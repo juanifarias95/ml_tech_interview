@@ -24,6 +24,7 @@ class DataPreprocessingParams:
     """
     Params used for data preprocessing (drop features, outliers, null values, feature engineer)
     """
+    data_path = "../data"
     cols_to_drop = ["warranty", "seller_contact", "listing_source", "official_store_id",
                           "differential_pricing", "original_price", "video_id", "catalog_product_id"]
 
@@ -38,10 +39,9 @@ class MLParams:
     Params for ML model
     """
     early_stopping: int = 100
-    cv_folds: int = 5
-    train_params = {"learning_rate":0.1, "n_estimators":140, "max_depth":5,
+    train_params = {"learning_rate":0.1, "n_estimators":140, "max_depth":7,
                           "min_child_weight":3, "gamma":0.2, "subsample":0.6, "colsample_bytree":1.0,
-                          "objective":'binary:logistic', "nthread":4, "scale_pos_weight":1, "seed":27}
+                          "nthread":4, "scale_pos_weight":1, "seed":27}
 
 
 @dataclass
@@ -49,6 +49,7 @@ class ExpParams:
     """
     Parameters for this experiment
     """
+    cv_folds: int = 5
     path_train_results: str = "reports/train"
     path_test_results: str = "reports/test"
     output_results_file: str = "results.log"

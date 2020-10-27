@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import sklearn
 
 #Common Model Algorithms
@@ -7,7 +8,7 @@ import xgboost as xgb
 from xgboost import XGBClassifier
 
 #Common Model Helpers
-from sklearn.preprocessing import OneHotEncoder, LabelEncoder
+from sklearn.preprocessing import LabelEncoder
 from sklearn import feature_selection
 from sklearn import model_selection
 from sklearn import metrics
@@ -18,6 +19,7 @@ from sklearn.metrics import classification_report, confusion_matrix
 
 from pathlib import Path
 
+import itertools
 import joblib
 import warnings
 import logging
@@ -31,37 +33,83 @@ class MLModel(object):
     def __init__(self, params, report_folder=None):
         self.params = params
         self.report_folder = report_folder
+        self.models = []
+        self.auc_results = np.array([])
 
-    def train_model(self, X: pd.DataFrame, y: pd.DataFrame) -> xgb.Booster:
-        xgb_model = XGBClassifier(**self.params.train_params)
 
-        xgb_param = xgb_model.get_xgb_params()
-        xgb_train = xgb.DMatrix(X.values, label=y.values)
-        cv_result = xgb.cv(xgb_param, xgb_train, stratified=True, num_boost_round=xgb_model.get_params()['n_estimators'],
-                           nfold=self.params.cv_folds, early_stopping_rounds=self.params.early_stopping, verbose_eval=True)
-        xgb_model.set_params(n_estimators=cv_result.shape[0])
+    def train_model(self, df: pd.DataFrame, fold: int) -> xgb.Booster:
+        num_cols = ["shipping_free", "price", "accepts_mercadopago", "automatic_relist",
+                    "initial_quantity",	"sold_quantity", "available_quantity", "quantity"]
+
+        cat_cols = [c for c in df.columns if c not in num_cols and c not in ("kfold", "target")]
+
+        df = self.feature_engineer(df, cat_cols)
+
+        features = [f for f in df.columns if f not in ("kfold", "target")]
+
+        for col in features:
+            if col not in num_cols:
+                lbl = LabelEncoder()
+                lbl.fit(df[col])
+                df.loc[:, col] = lbl.transform(df[col])
         
-        # fit model
-        xgb_model.fit(X, y)
+        df_train = df[df.kfold != fold].reset_index(drop=True)
+        df_valid = df[df.kfold == fold].reset_index(drop=True)
 
-        # Save model
+        X_train = df_train[features].values
+        X_valid = df_valid[features].values
+
+        model = xgb.XGBClassifier(**self.params.train_params)
+
+        model.fit(X_train, df_train.target.values)
+
+        valid_preds = model.predict_proba(X_valid)[:, 1]
+
+        auc = metrics.roc_auc_score(df_valid.target.values, valid_preds)
+
+        logger.info(f"Fold = {fold}, AUC = {auc}")
+
+        self.models.append(model)
+        self.auc_results = np.concatenate((self.auc_results, [auc]))
+
+    def save_model(self, xgb_model):
         path_model = Path(os.path.join(self.report_folder, "model_new_used_item.xgb"))
         joblib.dump(xgb_model, path_model)
-
-        return xgb_model
 
     def load_model(self, path: str):
         model = joblib.load(path)
 
         return model
 
-    def test_model(self, model: xgb.Booster, X: pd.DataFrame, y: pd.DataFrame) -> (str, float):
-        preds = model.predict(X)
-        report = classification_report(y, preds)
-        cm = confusion_matrix(y, preds)
-        tn, fp, fn, tp = cm.ravel()
-        fpr, tpr, thresholds = metrics.roc_curve(y, preds)
-        auc = metrics.auc(fpr, tpr)
+    def test_model(self, model: xgb.Booster, df: pd.DataFrame) -> (str, float):
+        num_cols = ["shipping_free", "price", "accepts_mercadopago", "automatic_relist",
+                    "initial_quantity",	"sold_quantity", "available_quantity", "quantity"]
 
-        return report, tn, fp, fn, tp, auc
+        cat_cols = [c for c in df.columns if c not in num_cols and c not in ("target")]
+
+        df = self.feature_engineer(df, cat_cols)
+
+        features = [f for f in df.columns if f not in ("target")]
+
+        for col in features:
+            if col not in num_cols:
+                lbl = LabelEncoder()
+                lbl.fit(df[col])
+                df.loc[:, col] = lbl.transform(df[col])
+
+        X = df.drop(["target"], axis=1).values
+        y = df.target.values
+
+        preds = model.predict_proba(X)[:, 1]
+
+        auc = metrics.roc_auc_score(y, preds)
+
+        logger.info(f"AUC Test = {auc}")
+
+    def feature_engineer(self, df:pd.DataFrame, cat_cols: list) -> pd.DataFrame:
+        combi = list(itertools.combinations(cat_cols, 2))
+        for c1, c2 in combi:
+            df.loc[:, c1 + "_" + c2] = df[c1].astype(str) + "_" + df[c2].astype(str)
+
+        return df
 
