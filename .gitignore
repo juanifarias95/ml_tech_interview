@@ -1,6 +1,4 @@
-__pycache__/*.pyc
-# Jupyter NB Checkpoints
+detect_item_new_or_old/__pycache__/
 .ipynb_checkpoints/
 /data/*.csv
 /detect_item_new_or_used/reports
-*.pyc

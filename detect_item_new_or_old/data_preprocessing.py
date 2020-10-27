@@ -1,10 +1,13 @@
 import pandas as pd
 import numpy as np
 
+import os
+
 import logging
 import warnings
 
-from sklearn.preprocessing import StandardScaler
+from sklearn import model_selection
+
 
 warnings.filterwarnings('ignore')
 logger = logging.getLogger()
@@ -122,24 +125,17 @@ class DataPreprocessing(object):
         
         return df
 
-    def get_labeled_data(self, df: pd.DataFrame) -> pd.DataFrame:
-        df = pd.get_dummies(df)
+    def create_k_folds(self, df: pd.DataFrame) -> pd.DataFrame:
+        df["kfold"] = -1
+        df = df.sample(frac=1).reset_index(drop=True)
+        y = df.target.values
+        kf = model_selection.StratifiedKFold(n_splits=5)
+        for f, (t_, v_) in enumerate(kf.split(X=df, y=y)):
+            df.loc[v_, 'kfold'] = f
+
+        df.to_csv(os.path.join(self.params.data_path, "train_folds.csv"), index=False)
 
         return df
-
-
-    def get_scaled_data(self, df: pd.DataFrame) -> pd.DataFrame:
-        scaler = StandardScaler()
-        for col in self.params.cols_to_standarize:
-            df[col] = scaler.fit_transform(df[col].values.reshape(-1, 1))
-        
-        return df
-
-    def drop_diff_cols(self, X_train_df: pd.DataFrame, X_test_df: pd.DataFrame) -> pd.DataFrame:
-        remaining_cols = list(set(X_train_df.columns) - set(X_test_df))
-        X_train_df.drop(remaining_cols, axis=1, inplace=True)
-
-        return X_train_df
 
     def preprocess_data(self, df: pd.DataFrame, data_type: str = "train") -> pd.DataFrame:
         df = self.drop_columns(df)
@@ -155,7 +151,5 @@ class DataPreprocessing(object):
         df = self.delete_outliers(df)
         df = self.get_quantity_feature(df)
         df = self.get_price_bin_feature(df)
-        df = self.get_labeled_data(df)
-        df = self.get_scaled_data(df)
 
         return df

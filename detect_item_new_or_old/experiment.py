@@ -56,7 +56,7 @@ class NewUsedItemExperiment(object):
                                 help="If set, this argument will force the experiment to train over train dataset")
         argparser.add_argument('--test', action='store_true', default=False,
                                 help="If set, this argument will force the experiment to test over test dataset")
-        argparser.add_argument('--test-models', default=None, help="Path where XBoost model and discretizers are")    
+        argparser.add_argument('--test_models', default=None, help="Folder into reports/train where XBoost model is")
         
         self.args = argparser.parse_args()
 
@@ -116,7 +116,7 @@ class NewUsedItemExperiment(object):
         df_train = data_preprocessing_obj.preprocess_data(df_train, data_type="train")
         df_test = data_preprocessing_obj.preprocess_data(df_test, data_type="test")
 
-        df_train = data_preprocessing_obj.drop_diff_cols(df_train, df_test)
+        df_train = data_preprocessing_obj.create_k_folds(df_train)
 
         return df_train, df_test
 
@@ -124,55 +124,29 @@ class NewUsedItemExperiment(object):
         """
         Main experiment function
         """
-        df_train, df_test = self.prepare_data_for_experiment()
-
+        _, df_test = self.prepare_data_for_experiment()
+        ml_model_obj = MLModel(MLParams, self.out_dir)
+        
         if self.args.test:
             if not self.args.test_models:
-                sys.exis("You must specify which model you want to test. Remember it is a folder located on reports/train/ and" 
+                sys.exis("You must specify which model you want to test. Recall it's a folder located on reports/train/ and" 
                          "the folder is like 20201023_183350")
-            self.test_experiment(df_test)
+            print(f"Testing model ...")
+            self.logger.info(f"\nTesting model ...\n")
+            path = os.getcwd()
+            model_folder = os.path.join(path, self.params.path_train_results, self.args.test_models, "model_new_used_item.xgb")
+            xgb_model = ml_model_obj.load_model(model_folder)
+            ml_model_obj.test_model(xgb_model, df_test)
         else:
-            self.train_experiment(df_train)
-
-    def train_experiment(self, df_train):     
-        ml_model_obj = MLModel(MLParams, self.out_dir)
-
-        X_train = df_train.drop(["target"], axis=1)
-        y_train = df_train["target"]
-
-        self.logger.info("Training model...\n")
-        xgb_model = ml_model_obj.train_model(X_train, y_train)
-
-        self.logger.info("\nTRAIN RESULTS\n")
-        self.logger.info("=============\n")
-
-        report, tn, fp, fn, tp, auc = ml_model_obj.test_model(xgb_model, X_train, y_train)
-        self.logger.info(f"Classification report: \n{report}\n")
-        self.logger.info(f"True Negatives = {tn}\n")
-        self.logger.info(f"False Positives = {fp}\n")
-        self.logger.info(f"False Negatives = {fn}\n")
-        self.logger.info(f"True Positives = {tp}\n")
-        self.logger.info(f"AUC = {auc}")
-        
-    def test_experiment(self, df_test):
-        ml_model_obj = MLModel(MLParams)
-        path = os.getcwd()
-        model_folder = os.path.join(path, self.params.path_train_results, self.args.test_models, "model_new_used_item.xgb")
-        xgb_model = ml_model_obj.load_model(model_folder)
-
-        X_test = df_test.drop(["target"], axis=1)
-        y_test = df_test["target"]
-
-        self.logger.info("TEST RESULTS")
-        self.logger.info("============\n")
-        report, tn, fp, fn, tp, auc = ml_model_obj.test_model(xgb_model, X_test, y_test)
-        self.logger.info(f"Classification report: \n{report}\n")
-        self.logger.info(f"True Negatives = {tn}\n")
-        self.logger.info(f"False Positives = {fp}\n")
-        self.logger.info(f"False Negatives = {fn}\n")
-        self.logger.info(f"True Positives = {tp}\n")
-        self.logger.info(f"AUC = {auc}")
-
+            for fold_ in range(self.params.cv_folds):
+                df_train = pd.read_csv(os.path.join(self.params.data_path, "train_folds.csv"))
+                print(f"Training model on fold {fold_} ...")
+                self.logger.info(f"\nTraining model on fold {fold_}...\n")
+                ml_model_obj.train_model(df_train, fold_)
+            # Choose the best AUC result and save the respective model
+            max_auc = np.argmax(ml_model_obj.auc_results)
+            max_model = ml_model_obj.models[max_auc]
+            ml_model_obj.save_model(max_model)
 
 if __name__ == "__main__":
     new_used_item_obj = NewUsedItemExperiment(ExpParams)

@@ -2,33 +2,26 @@ INFO:NewUsedItemExperiment:
 Starting experiment
 
 INFO:NewUsedItemExperiment:
-Saving results to /Users/juanignaciofarias/Documents/mercado_libre_tech_interview/detect_item_new_or_old/reports/train/20201026_094136
-INFO:NewUsedItemExperiment:Training model...
-
+Saving results to /Users/juanignaciofarias/Documents/mercado_libre_tech_interview/detect_item_new_or_old/reports/train/20201027_191732
 INFO:NewUsedItemExperiment:
-TRAIN RESULTS
+Training model on fold 0...
 
-INFO:NewUsedItemExperiment:=============
+INFO:root:Fold = 0, AUC = 0.9087279464647323
+INFO:NewUsedItemExperiment:
+Training model on fold 1...
 
-INFO:NewUsedItemExperiment:Classification report: 
-              precision    recall  f1-score   support
+INFO:root:Fold = 1, AUC = 0.9092972559283852
+INFO:NewUsedItemExperiment:
+Training model on fold 2...
 
-           0       0.78      0.60      0.68     10068
-           1       0.89      0.95      0.92     34450
+INFO:root:Fold = 2, AUC = 0.9156026464962966
+INFO:NewUsedItemExperiment:
+Training model on fold 3...
 
-    accuracy                           0.87     44518
-   macro avg       0.83      0.77      0.80     44518
-weighted avg       0.86      0.87      0.86     44518
+INFO:root:Fold = 3, AUC = 0.9076879816749907
+INFO:NewUsedItemExperiment:
+Training model on fold 4...
 
-
-INFO:NewUsedItemExperiment:True Negatives = 6009
-
-INFO:NewUsedItemExperiment:False Positives = 4059
-
-INFO:NewUsedItemExperiment:False Negatives = 1717
-
-INFO:NewUsedItemExperiment:True Positives = 32733
-
-INFO:NewUsedItemExperiment:AUC = 0.773500564809513
+INFO:root:Fold = 4, AUC = 0.9159236010921751
 INFO:NewUsedItemExperiment:
 Experiment finished!
