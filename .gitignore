@@ -1,4 +1,9 @@
+# Byte-compiled / optimized / DLL files
 detect_item_new_or_old/__pycache__/
+__pycache__/
+*.py[cod]
+*$py.class
+__pycache__/
 .ipynb_checkpoints/
 /data/*.csv
 /detect_item_new_or_used/reports
